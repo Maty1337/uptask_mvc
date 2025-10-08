@@ -35,27 +35,38 @@ class LoginController
         ]);
     }
 
-    public static function olvide()
+    public static function olvide(Router $router)
     {
-        echo "olvide";
+        
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
+
+        $router->render('auth/olvide', [
+            'titulo'=>'Recupera tu acceso a UpTask'
+        ]);
     }
-    public static function restablecer()
+    public static function restablecer(Router $router)
     {
-        echo "olvide";
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
+
+        $router->render('auth/restablecer', [
+            'titulo'=>'Restablece tu password'
+        ]);
     }
 
-    public static function mensaje()
+    public static function mensaje(Router $router)
     {
-        echo "olvide";
+           $router->render('auth/mensaje', [
+            'titulo'=>'Cuenta creada correctamente'
+        ]);
     }
-    public static function confirmar()
+    public static function confirmar(Router $router)
     {
-        echo "olvide";
+         $router->render('auth/confirmar', [
+            'titulo'=>'Confirma tu cuenta'
+        ]);
     }
 }

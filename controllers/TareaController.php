@@ -8,7 +8,30 @@ use Model\Proyecto;
 
 class TareaController {
     public static function index() {
-        // Lógica para obtener y devolver las tareas
+
+        $proyectoId = $_GET['id'];
+
+        if(!$proyectoId) {
+             header('Location: /dashboard');
+            exit;
+        }
+
+        //Revisar que el proyecto exista
+        $proyecto = Proyecto::where('url', $proyectoId);
+
+        session_start();
+
+        if(!$proyecto || $proyecto->propietarioId !== $_SESSION['id']) {
+
+            header('Location: /404');
+            exit;
+        }
+            
+        $tareas = Tarea::belongsTo('proyectoId', $proyecto->id);
+            
+        echo json_encode(['tareas' => $tareas]);
+        
+
     }
     public static function crear() {
         // Lógica para crear una tarea
@@ -35,23 +58,75 @@ class TareaController {
                 $respuesta = [
                     "tipo" => "exito",
                     "id" => $resultado['id'],
-                    "mensaje" => "Tarea Creada Correctamente"
+                    "mensaje" => "Tarea Creada Correctamente",
+                    "proyectoId" => $proyecto->id
                 ];
                 echo json_encode($respuesta);            
         }
     }
 
     public static function actualizar() {
-        // Lógica para actualizar una tarea
         if($_SERVER['REQUEST_METHOD'] === 'POST'){
-            
+            $proyecto = Proyecto::where('url', $_POST['proyectoId']);
+
+            session_start();
+
+             if(!$proyecto || $proyecto->propietarioId !== $_SESSION['id']) {
+                $respuesta = [
+                    "tipo" => "error",
+                    "mensaje" => "Hubo un error al actualizar la tarea"
+                ];
+                echo json_encode($respuesta);
+                return;
+            }
+
+            //Actualizar la tarea
+            $tarea = new Tarea($_POST);
+            $tarea->proyectoId = $proyecto->id;
+
+            $resultado = $tarea->guardar();
+
+            if($resultado) {
+                $respuesta = [
+                    "tipo" => "exito",
+                    "id" => $tarea->id,
+                    "proyectoId" => $proyecto->id,
+                    "mensaje" => "Actualizado Correctamente"
+                ];
+                echo json_encode(['respuesta' => $respuesta]);
+                return;
+            }
+         
         }
     }
 
     public static function eliminar() {
-        // Lógica para eliminar una tarea
-        if($_SERVER['REQUEST_METHOD'] === 'POST'){
-            
+       if($_SERVER['REQUEST_METHOD'] === 'POST'){
+            $proyecto = Proyecto::where('url', $_POST['proyectoId']);
+
+            session_start();
+
+             if(!$proyecto || $proyecto->propietarioId !== $_SESSION['id']) {
+                $respuesta = [
+                    "tipo" => "error",
+                    "mensaje" => "Hubo un error al actualizar la tarea"
+                ];
+                echo json_encode($respuesta);
+                return;
+            }
+
+            //Eliminar la tarea
+            $tarea = new Tarea($_POST);
+            $resultado = $tarea->eliminar();
+
+            $resultado = [
+                'resultado' => $resultado,
+                'mensaje' => "Tarea Eliminada Correctamente",
+                'tipo' => 'exito'
+            ];
+           
+            echo json_encode($resultado);
+         
         }
     }
 }

@@ -1,9 +1,30 @@
 (function () {
   obtenerTareas();
   let tareas = [];
+  let filtradas = [];
   //Boton para agregar una nueva tarea
   const nuevaTareaBtn = document.querySelector("#agregar-tarea");
-  nuevaTareaBtn.addEventListener("click", mostrarFormulario);
+  nuevaTareaBtn.addEventListener("click", function () {
+    mostrarFormulario(false);
+  });
+
+  const filtros = document.querySelectorAll('#filtros input[type="radio"]');
+  filtros.forEach(radio => {
+    radio.addEventListener('input', filtrarTareas);
+  });
+
+  function filtrarTareas(e){
+    const filtro = e.target.value;
+
+    if(filtro !== ''){
+      filtradas = tareas.filter(tarea => tarea.estado === filtro);
+    }else{
+      filtradas = [];
+    }
+
+    mostrarTareas();
+  }
+  console.log(filtros);
 
   async function obtenerTareas() {
     try {
@@ -21,7 +42,11 @@
 
   function mostrarTareas() {
     limpiarTareas();
-    if (tareas.length === 0) {
+    totalPendientes();
+    totalCompletadas();
+
+    const arrayTareas = filtradas.length ? filtradas : tareas;
+    if (arrayTareas.length === 0) {
       const contenedorTareas = document.querySelector("#listado-tareas");
       const textoNoTareas = document.createElement("LI");
       textoNoTareas.textContent = "No hay tareas en este proyecto";
@@ -35,7 +60,7 @@
       1: "Completada",
     };
 
-    tareas.forEach((tarea) => {
+    arrayTareas.forEach((tarea) => {
       const contenedorTarea = document.createElement("LI");
 
       contenedorTarea.dataset.tareaId = tarea.id;
@@ -43,6 +68,9 @@
 
       const nombreTarea = document.createElement("P");
       nombreTarea.textContent = tarea.nombre;
+      nombreTarea.ondblclick = function () {
+        mostrarFormulario(editar = true, {...tarea});
+      };
 
       const opcionesDiv = document.createElement("DIV");
       opcionesDiv.classList.add("opciones");
@@ -73,23 +101,53 @@
       listadoTareas.appendChild(contenedorTarea);
     });
   }
-  function mostrarFormulario() {
+
+  function totalPendientes() {
+    const totalPendientes = tareas.filter(tarea => tarea.estado === "0");
+    const pendientesRadio = document.querySelector('#pendientes');
+
+    if(totalPendientes.length === 0){
+      pendientesRadio.disabled = true;
+    } else{
+      pendientesRadio.disabled = false;
+    }
+  }
+
+   function totalCompletadas() {
+    const totalCompletadas = tareas.filter(tarea => tarea.estado === "1");
+    const completaRadio = document.querySelector('#completadas');
+
+    if(totalCompletadas.length === 0){
+      completaRadio.disabled = true;
+    } else{
+      completaRadio.disabled = false;
+    }
+  }
+  
+  function mostrarFormulario(editar = false, tarea = {}) {
     const modal = document.createElement("div");
     modal.classList.add("modal");
     modal.innerHTML = `
             <form class="formulario nueva-tarea">
-                <legend>Agregar Nueva Tarea</legend>
+                <legend>${
+                  editar ? "Editar Tarea" : "Añade una nueva tarea"
+                }</legend>
                 <div class="campo">
                     <label for="tarea">Tarea:</label>
                     <input
                         type="text"
                         name="tarea"
-                        placeholder="Añadir Tarea al Proyecto"
+                        placeholder="${
+                          editar ? "Edita la Tarea" : "Añadir Tarea al Proyecto"
+                        }"
                         id="tarea"
+                        value="${editar ? tarea.nombre : ""}"
                     />
                 </div>
                 <div class="opciones">
-                    <input type="submit" class="submit-nueva-tarea" value="Añadir Tarea" />
+                    <input type="submit" class="submit-nueva-tarea" value="${
+                      editar ? "Editar Tarea" : "Añadir Tarea"
+                    }" />
                     <button type="button" class="cerrar-modal">Cancelar</button>
                 </div>
             </form>
@@ -112,27 +170,30 @@
         }, 50);
       }
       if (e.target.classList.contains("submit-nueva-tarea")) {
-        submitFormularioNuevaTarea();
+        const nombreTarea = document.querySelector("#tarea").value.trim();
+
+        if (tarea === "") {
+          mostrarAlerta(
+            "El nombre de la tarea es obligatorio",
+            "error",
+            document.querySelector(".formulario legend")
+          );
+          return;
+        }
+
+        if (editar){
+          tarea.nombre = nombreTarea;
+          actualizarTarea(tarea);
+        }else{
+          agregarTarea(nombreTarea);
+        }
       }
     });
 
     document.querySelector(".dashboard").appendChild(modal);
   }
 
-  function submitFormularioNuevaTarea() {
-    const tarea = document.querySelector("#tarea").value.trim();
 
-    if (tarea === "") {
-      mostrarAlerta(
-        "El nombre de la tarea es obligatorio",
-        "error",
-        document.querySelector(".formulario legend")
-      );
-      return;
-    }
-
-    agregarTarea(tarea);
-  }
 
   function mostrarAlerta(mensaje, tipo, referencia) {
     //Si ya hay una alerta, no crear otra
@@ -203,6 +264,7 @@
   }
 
   async function actualizarTarea(tarea) {
+
     //Actualizar en la base de datos
     const { estado, id, nombre, proyectoId } = tarea;
 
@@ -221,15 +283,21 @@
       const resultado = await respuesta.json();
 
       if (resultado.respuesta.tipo === "exito") {
-        mostrarAlerta(
+        swal.fire(
           resultado.respuesta.mensaje,
-          resultado.respuesta.tipo,
-          document.querySelector(".contenedor-nueva-tarea")
-        );
+          resultado.respuesta.mensaje,
+          "success"
+        )
+
+        const modal = document.querySelector(".modal");
+        if(modal){
+          modal.remove();
+        }
 
         tareas = tareas.map((tareaMemoria) => {
           if (tareaMemoria.id === id) {
             tareaMemoria.estado = estado;
+            tareaMemoria.nombre = nombre; 
           }
 
           return tareaMemoria;
@@ -252,13 +320,12 @@
       /* Read more about isConfirmed, isDenied below */
       if (result.isConfirmed) {
         eliminarTarea(tarea);
-      } 
+      }
     });
   }
 
   async function eliminarTarea(tarea) {
-
-   const { estado, id, nombre, proyectoId } = tarea;
+    const { estado, id, nombre, proyectoId } = tarea;
 
     const datos = new FormData();
     datos.append("id", id);
@@ -266,24 +333,27 @@
     datos.append("estado", estado);
     datos.append("proyectoId", obtenerProyecto());
     try {
-        const url = "http://localhost:3000/api/tarea/eliminar";
-        const respuesta = await fetch(url, {
-            method: "POST",
-            body: datos,
-        });
+      const url = "http://localhost:3000/api/tarea/eliminar";
+      const respuesta = await fetch(url, {
+        method: "POST",
+        body: datos,
+      });
 
-        const resultado = await respuesta.json();
-        if (resultado.resultado){
-            //mostrarAlerta(resultado.mensaje, resultado.tipo, document.querySelector(".contenedor-nueva-tarea"));
+      const resultado = await respuesta.json();
+      if (resultado.resultado) {
+        //mostrarAlerta(resultado.mensaje, resultado.tipo, document.querySelector(".contenedor-nueva-tarea"));
 
-            swal.fire("Tarea Eliminada", "La tarea se eliminó correctamente", "success");
+        swal.fire(
+          "Tarea Eliminada",
+          "La tarea se eliminó correctamente",
+          "success"
+        );
 
-            tareas = tareas.filter(tareaMemoria => tareaMemoria.id !== id);
-            mostrarTareas();
-        }
-        
+        tareas = tareas.filter((tareaMemoria) => tareaMemoria.id !== id);
+        mostrarTareas();
+      }
     } catch (error) {
-        console.log(error);
+      console.log(error);
     }
   }
   function obtenerProyecto() {

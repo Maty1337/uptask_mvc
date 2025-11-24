@@ -39,7 +39,7 @@
     .enlace{
         color: v.$indigo;
         &:hover{
-            color: scale-color(v.$indigo, $lightness: -50%);
+            color: color.scale(v.$indigo, $lightness: -50%);
         }
     }
 }

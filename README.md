@@ -54,27 +54,38 @@ Incluye autenticación completa, sistema de proyectos, tareas dinámicas mediant
 
 🖼 Capturas de pantalla
 
-![Cambiar Password](readme-assets/cambiar-password.png)
-
-![Crear Cuenta](readme-assets/crear-cuenta.png)
-
-![Crear Proyecto](readme-assets/crear-proyecto.png)
-
-![Editar Perfil](readme-assets/editar-perfil.png)
-
+Login
 ![Login](readme-assets/login.png)
 
-![Menú Mobile](readme-assets/menu-mobile.png)
+Cambiar Password
+![Cambiar Password](readme-assets/cambiar-password.png)
 
-![Proyectos Mobile](readme-assets/proyectos-mobile.png)
+Crear Cuenta
+![Crear Cuenta](readme-assets/crear-cuenta.png)
 
-![Proyectos](readme-assets/proyectos.png)
-
+Recuperar Password
 ![Recuperar Password](readme-assets/recuperar-password.png)
 
-![Tareas Mobile](readme-assets/tareas-mobile.png)
+Crear Proyecto
+![Crear Proyecto](readme-assets/crear-proyecto.png)
 
+Editar Perfil
+![Editar Perfil](readme-assets/editar-perfil.png)
+
+Proyectos
+![Proyectos](readme-assets/proyectos.png)
+
+Tareas
 ![Tareas](readme-assets/tareas.png)
+
+Menu Mobile
+![Menú Mobile](readme-assets/menu-mobile.png)
+
+Proyecto Mobile
+![Proyectos Mobile](readme-assets/proyectos-mobile.png)
+
+Tareas Mobile
+![Tareas Mobile](readme-assets/tareas-mobile.png)
 
 ---
 

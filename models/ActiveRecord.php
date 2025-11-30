@@ -68,6 +68,13 @@ class ActiveRecord {
         return array_shift( $resultado ) ;
     }
 
+    // Busca todos los registros con un valor en especifico
+    public static function beLongsTo($columna, $valor) {
+        $query = "SELECT * FROM " . static::$tabla . " WHERE ${columna} = '${valor}'";
+        $resultado = self::consultarSQL($query);
+        return $resultado;
+    }
+
     // SQL para Consultas Avanzadas.
     public static function SQL($consulta) {
         $query = $consulta;
@@ -81,11 +88,11 @@ class ActiveRecord {
         $atributos = $this->sanitizarAtributos();
 
         // Insertar en la base de datos
-        $query = " INSERT INTO " . static::$tabla . " ( ";
+        $query = " INSERT INTO " . static::$tabla . " (";
         $query .= join(', ', array_keys($atributos));
-        $query .= " ) VALUES (' "; 
+        $query .= ") VALUES ('"; 
         $query .= join("', '", array_values($atributos));
-        $query .= " ') ";
+        $query .= "') ";
 
         // Resultado de la consulta
         $resultado = self::$db->query($query);
